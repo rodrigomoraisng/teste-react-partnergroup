@@ -1,20 +1,15 @@
-import React, { Component } from 'react';
-import NovoUsuario from './NovoUsuario';
-import ListagemUsuarios from './ListagemUsuarios';
+import React from 'react';
+import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
+import asyncComponent from './components/AsyncComponent';
 
-class App extends Component {
-  
-  render() {
-    return (
-      <div className="App">
-        <div className="navbar">
-          <h2 className="center">Post It</h2>
-        </div>
-        <NovoUsuario/>
-        <ListagemUsuarios/>
-      </div>
-    );
-  }
-}
+const AsyncUsuario = asyncComponent(() => import('./User'));
 
-export default App;
+export default (childProps) =>
+  <BrowserRouter>
+    <Switch>
+      <Route path="/usuarios" exact props={childProps} component={AsyncUsuario} />
+      <Route path="/usuarios/novo" exact props={childProps} component={AsyncUsuario} />
+      <Route path="/usuarios/:id" exact props={childProps} component={AsyncUsuario} />
+      <Route render={() => ((<Redirect to="/usuarios"/>))}/>
+    </Switch>
+  </BrowserRouter>

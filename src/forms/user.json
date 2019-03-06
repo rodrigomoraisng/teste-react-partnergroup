@@ -1,0 +1,65 @@
+[
+    {
+        "id": "name",
+        "link": true,
+        "required": true
+    },
+    {
+        "id": "username",
+        "disableFromList": true
+    },
+    {
+        "id": "email",
+        "required": true
+    },
+    {
+        "id": "address",
+        "disableFromList": true,
+        "items": [
+            {
+                "id": "street"
+            }, 
+            {
+                "id": "suite"
+            }, 
+            {
+                "id": "city"
+            },
+            {
+                "id" : "zipcode"
+            },
+            {
+                "id": "geo",
+                "items": [
+                    {
+                        "id": "lat"
+                    }, 
+                    {
+                        "id": "lng"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "phone",
+        "disableFromList": true
+    },
+    {
+        "id": "website",
+        "required": true
+    },
+    {
+        "id": "company",
+        "disableFromList": true,
+        "items": [
+            {
+                "id": "name"
+            }, {
+                "id": "catchPhrase"
+            }, {
+                "id": "bs"
+            }
+        ]
+    }
+]
