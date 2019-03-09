@@ -10,6 +10,7 @@ export default (childProps) =>
       <Route path="/usuarios" exact props={childProps} component={AsyncUsuario} />
       <Route path="/usuarios/novo" exact props={childProps} component={AsyncUsuario} />
       <Route path="/usuarios/:id" exact props={childProps} component={AsyncUsuario} />
+      <Route path="/usuarios/editar/:id" exact props={childProps} component={AsyncUsuario} />
       <Route render={() => ((<Redirect to="/usuarios"/>))}/>
     </Switch>
   </BrowserRouter>

@@ -7,13 +7,14 @@ export default {
   remove(id, callback) {
     if (typeof id === 'undefined') return;
     return this.req({
-      type: 'delete',
+      type: 'DELETE',
       url: this.wsURL + id, callback
     });
   },
 
   get(id, callback) {
     return this.req({
+      type: 'GET',
       url: this.wsURL + (id !== null ? id : ''), callback
     });
   },
@@ -21,15 +22,15 @@ export default {
   add(data, callback) {
     if (!data) return;
     return this.req({
-      type: 'post',
-      url: this.wsURL, callback,
+      type: 'POST',
+      url: this.wsURL, callback, data
     });
   },
 
   update(id, data, callback){
     if (!id || !data) return;
     return this.req({
-      type: 'put',
+      type: 'PUT',
       url: this.wsURL + (id !== null ? id : ''), callback, data
     });
   },
@@ -49,13 +50,14 @@ export default {
 
   req (options) {
     const o = options;
-    
-    return request[o.type || 'get'](o.url, (err, res, data) => {
+    return request({
+      method: o.type, url: o.url, json: o.data 
+    }, (err, res, data) => {
       if (err) return console.error(err);
       if (res.statusCode === 200 && data) {
-        return o.callback(data);
+        return typeof o.callback === 'function' ? o.callback(data) : data;
       }
-      return null;
+      return typeof o.callback === 'function' ? o.callback(null) : null;
     });
   },
 

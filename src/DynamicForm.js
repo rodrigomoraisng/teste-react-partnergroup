@@ -1,13 +1,19 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import Util from './Util';
 import { connect } from 'react-redux';
 
 class DynamicForm extends Component {
+  _isMounted = false;
+
   constructor(props){
     super(props);
-    this.state = {action: null}
+    this.state = {
+      redirectPath: '',
+      redirect: false
+    };
   }
+
   sendFormData = (e) => {
     e.preventDefault();
     let dataObj = {};
@@ -29,12 +35,35 @@ class DynamicForm extends Component {
       }
     });
 
-    if (this.state.action === 'update') {
-      Util.update(this.props.iterator.id, dataObj);
-    } else if (this.state.action === 'add'){
-      Util.add(this.props.iterator.id, dataObj);
+    if (this.formAction === 'update') {
+      Util.update(this.props.iterator.id, dataObj, () => {
+        dataObj.id = this.props.iterator.id;
+        this.props.dispatch({type: 'UPDATE', users: dataObj});
+        this.setRedirect('/usuarios/' + this.props.iterator.id);
+      });
+    } else if (this.formAction === 'add') {
+      Util.add(dataObj, () => {
+        dataObj.id = Util.buildToken();
+        dataObj.new = true;
+        this.props.dispatch({type: 'NEW', users: dataObj});
+        this.setRedirect('/usuarios');
+      });
     }
   }
+
+  setRedirect(path){
+    this.setState({
+      redirectPath: path,
+      redirect: true
+    });
+  }
+
+  renderRedirect(){
+    if (this.state.redirect && window.location.pathname !== this.state.redirectPath) {
+      return (<Redirect to={this.state.redirectPath} />);
+    }
+  }
+  
   render () {
     if (this.props.isEditting || this.props.new) {
       return (
@@ -56,7 +85,6 @@ class DynamicForm extends Component {
                                   required 
                                   type="text" 
                                   name={item.id + '_' +  subItem.id + '_' + sItem.id}
-                                  onChange={this.handleInputChange}
                                   ref={(input) => {
                                     this[item.id] = this[item.id] || {};
                                     this[item.id][subItem.id] = this[item.id][subItem.id] || {};
@@ -69,7 +97,6 @@ class DynamicForm extends Component {
                                 <input  
                                   type="text"
                                   name={item.id + '_' +  subItem.id + '_' + sItem.id}
-                                  onChange={this.handleInputChange}
                                   ref={(input) => {
                                     this[item.id] = this[item.id] || {};
                                     this[item.id][subItem.id] = this[item.id][subItem.id] || {};
@@ -89,7 +116,6 @@ class DynamicForm extends Component {
                               required 
                               type="text" 
                               name={item.id + '_' +  subItem.id}
-                              onChange={this.handleInputChange}
                               ref={(input) => {
                                 this[item.id] = this[item.id] || {};
                                 this[item.id][subItem.id] = input;
@@ -101,7 +127,6 @@ class DynamicForm extends Component {
                             <input  
                               type="text"
                               name={item.id + '_' +  subItem.id}
-                              onChange={this.handleInputChange}
                               ref={(input) => {
                                 this[item.id] = this[item.id] || {};
                                 this[item.id][subItem.id] = input;
@@ -122,7 +147,6 @@ class DynamicForm extends Component {
                       required 
                       type="text" 
                       name={item.id}
-                      onChange={this.handleInputChange}
                       ref={(input) => this[item.id] = input}
                       placeholder={item.id}
                       defaultValue={this.props.new ? '' : this.props.iterator[item.id]}
@@ -131,7 +155,6 @@ class DynamicForm extends Component {
                     <input  
                       type="text"
                       name={item.id}
-                      onChange={this.handleInputChange}
                       ref={(input) => this[item.id] = input}
                       placeholder={item.id}
                       defaultValue={this.props.new ? '' : this.props.iterator[item.id]}
@@ -141,7 +164,9 @@ class DynamicForm extends Component {
               }
             </div>
           ))}
-          <button>Salvar alterações</button>
+          <input type="hidden" name="formAction" ref={(input) => this.formAction = this.props.new ? 'add' : 'update'}/>
+          <button>{this.props.new ? 'Criar' : 'Salvar alterações'}</button>
+          {this.renderRedirect()}
         </form>
       )
     } else {
@@ -178,6 +203,7 @@ class BuildFormfield extends Component {
               key={Util.buildToken()}
               item={subItem}
               hideLabels={hideLabels}
+              list={this.props.list}
               isEditting={this.props.isEditting}
               iterator={iterator[item.id]}
             />
@@ -191,6 +217,7 @@ class BuildFormfield extends Component {
         renderLink={!this.props.disableLink && item.link}
         iterator={iterator}
         item={item}
+        list={this.props.list}
         hideLabels={hideLabels}
       />
     );
@@ -205,12 +232,18 @@ class DisplayFormfieldValue extends Component {
 
     return (
       <div className={'formfield_value formfield_' + item.id}>
-        {label}{this.props.renderLink ? 
+        {label}{this.props.list && this.props.renderLink ? 
           <Link to={'/usuarios/' + iterator.id}>{iterator[item.id]}</Link> 
         : iterator[item.id]}
       </div>
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    users: state
+  }
+};
 
 export default connect()(DynamicForm);
